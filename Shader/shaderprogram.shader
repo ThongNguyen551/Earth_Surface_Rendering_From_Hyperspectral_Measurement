@@ -42,7 +42,7 @@ uniform sampler2D texture2;
 void main()
 {
     // ambient
-    float ambientStrength = 0.05;
+    float ambientStrength = 0.5;
     vec3 ambient = ambientStrength * lightColor;
 
     // diffuse 
@@ -55,21 +55,12 @@ void main()
     float specularStrength = 0.5;
     vec3 viewDir = normalize(viewPos - vposition);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(norm, halfwayDir), 0.0), 64.0);
-    
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), 8.0);    
     vec3 specular = specularStrength * spec * lightColor;
 
-    // simple attenuation
-    float max_distance = 1.5;
-    float distance = length(lightPos - vposition);
-    float attenuation = 1.0 / (distance * distance);
-    
-    ambient = ambient * attenuation;
-    diffuse = diffuse * attenuation;
-    specular = specular * attenuation;
 
-    vec3 result = (ambient + diffuse + specular) * objectColor * mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.9);
-    result = pow(result, vec3(1.0/2.2));    
+    vec3 result = (ambient + diffuse + specular) * objectColor * mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.4);
+
     outColor = vec4(result, 1.0);
 }
 
