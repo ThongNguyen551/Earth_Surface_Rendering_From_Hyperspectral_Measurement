@@ -18,7 +18,7 @@ NTNU, Gjovik, Norway
 
 - Install visual studio
 - Clone this reposition:  git clone https://github.com/ThongNguyen551/Earth_Surface_Rendering_From_Hyperspectral_Measurement.git
-- Download dependencies (glm, glew, glfw) and place in Earth_Surface_Rendering_From_Hyperspectral_Measurement/
+- Download dependencies (glm, glew, glfw) and 3D object from this link https://bit.ly/39BnFlR, then place all downloaded thinsg in the solution directory Earth_Surface_Rendering_From_Hyperspectral_Measurement/
 
 2. Running
 
