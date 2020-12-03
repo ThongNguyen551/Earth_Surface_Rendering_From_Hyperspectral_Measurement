@@ -38,6 +38,8 @@ uniform vec3 objectColor;
 // texture samplers
 uniform sampler2D texture1;
 uniform sampler2D texture2;
+uniform sampler2D texture3;
+uniform sampler2D texture4;
 
 void main()
 {
@@ -57,9 +59,8 @@ void main()
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(norm, halfwayDir), 0.0), 8.0);    
     vec3 specular = specularStrength * spec * lightColor;
-
-
-    vec3 result = (ambient + diffuse + specular) * objectColor * mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.4);
+    
+    vec3 result = (ambient + diffuse + specular) * objectColor * mix(texture(texture1, TexCoord),texture(texture4, TexCoord), 0.5) * mix(texture(texture2, TexCoord),texture(texture3, TexCoord),0.3);
 
     outColor = vec4(result, 1.0);
 }

@@ -33,6 +33,8 @@ The keyboard is processed to conduct these changes:
 - Move to the left: A
 - Move up: U
 - Move down: P
+- Rotate the scene: N
+- Stop rotating the scene: M
 
 2.2 Change the light color
 

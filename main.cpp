@@ -21,6 +21,9 @@ using namespace std;
 glm::vec3 lightColor1 = glm::vec3(1.f, 1.f, 1.0f);
 glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 lightPosition = glm::vec3(15.0f, 15.0f, 15.0f);
+bool rotate_mode = false;
+float curretAngle = 0;
+bool save = false;
 float currentX = camera.Position[0];
 float currentY = camera.Position[1];
 float currentZ = camera.Position[2];
@@ -85,7 +88,7 @@ int main(void)
     vb.Attach();
 
     //shaders
-    std::string spath = "Shader\\shaderprogram(backup).shader";
+    std::string spath = "Shader\\shaderprogram.shader";
     Shader shader(spath);
 
     // Specify the layout of the vertex data
@@ -136,7 +139,7 @@ int main(void)
     // load and create a texture 
 // -------------------------
     unsigned int texture2;
-    // texture 1
+    // texture 2
     // ---------
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
@@ -160,12 +163,69 @@ int main(void)
     }
     stbi_image_free(data);
 
+    // load and create a texture 
+// -------------------------
+    unsigned int texture3;
+    // texture 3
+    // ---------
+    glGenTextures(1, &texture3);
+    glBindTexture(GL_TEXTURE_2D, texture3);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // set texture filtering to nearest neighbor to clearly see the texels/pixels
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    data = stbi_load("Texture\\texture3.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    // load and create a texture 
+// -------------------------
+    unsigned int texture4;
+    // texture 4
+    // ---------
+    glGenTextures(1, &texture4);
+    glBindTexture(GL_TEXTURE_2D, texture4);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // set texture filtering to nearest neighbor to clearly see the texels/pixels
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    data = stbi_load("Texture\\texture4.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
-    shader.Attach(); 
+    shader.Attach();
     glUniform1i(glGetUniformLocation(shader.RendererID, "texture1"), 0);
     glUniform1i(glGetUniformLocation(shader.RendererID, "texture2"), 1);
+    glUniform1i(glGetUniformLocation(shader.RendererID, "texture3"), 2);
+    glUniform1i(glGetUniformLocation(shader.RendererID, "texture4"), 3);
 #pragma endregion Create Texture
 
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -215,13 +275,17 @@ int main(void)
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, texture3);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, texture4);
 
         // Setingup transformation
         // pass projection matrix to shader    
-        shader.Attach();       
+        shader.Attach();
 
         //fov
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),(float)width / (float)height, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
         // camera/view transformation
         glm::mat4 view = camera.GetViewMatrix();
         // pass transformation matrices to the shader
@@ -232,7 +296,23 @@ int main(void)
         // calculate the model matrix for each object and pass it to shader before drawing
         glm::mat4 model = glm::mat4(1.0f);
         float angle = 10.0f * float(currentTime);
-        model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        if (rotate_mode == true)
+        {
+            curretAngle = angle;
+            model = glm::rotate(model, glm::radians(curretAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+            save = true;
+        }
+        else
+        {
+            if (save == true)
+            {
+                curretAngle = angle;
+                save = false;
+            }
+        }
+
+
         shader.SetUniformMatrix4fv("model", 1, GL_FALSE, model);
         Light(float(currentTime), shader, camera, lightColor1);
         glDrawArrays(GL_TRIANGLES, 6, size);
@@ -409,6 +489,18 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
         camera.ProcessKeyboard(DOWN, deltaTime);
 
+    if (glfwGetKey(window, GLFW_KEY_N))
+    {
+        rotate_mode = true;
+        cout << "rotate" << endl;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_M))
+    {
+        rotate_mode = false;
+        cout << "stop rotating" << endl;
+    }
+
     if (currentX != camera.Position[0] || currentY != camera.Position[1] || currentZ != camera.Position[2])
         cout << "View position = Camera position -- X:" << camera.Position[0] << " Y:" << camera.Position[1] << " Z:" << camera.Position[2] << endl;
 
@@ -554,7 +646,7 @@ void processInput(GLFWwindow* window)
         }
         cout << "Object color -- R:" << objectColor[0] << " G:" << objectColor[1] << " B:" << objectColor[2] << endl;
     }
-    
+
     // Adjust light color to get different reflected color from object
     if (((glfwGetKey(window, GLFW_KEY_UP) && glfwGetKey(window, GLFW_KEY_R)) || (glfwGetKey(window, GLFW_KEY_UP) && glfwGetKey(window, GLFW_KEY_G)) || (glfwGetKey(window, GLFW_KEY_UP) && glfwGetKey(window, GLFW_KEY_B))) == GLFW_PRESS)
     {
